@@ -1,0 +1,62 @@
+[
+  {
+    "full_name": "Bulbasaur",
+    "name": "Bulbasaur",
+    "number": "0001",
+    "type": "Grass Poison",
+    "total": "318",
+    "hp": "45",
+    "attack": "49",
+    "defense": "49",
+    "sp_atk": "65",
+    "sp_def": "65",
+    "speed": "45",
+    "detail_path": "https://pokemondb.net/pokedex/bulbasaur",
+    "base_exp": "64"
+  },
+  {
+    "full_name": "Ivysaur",
+    "name": "Ivysaur",
+    "number": "0002",
+    "type": "Grass Poison",
+    "total": "405",
+    "hp": "60",
+    "attack": "62",
+    "defense": "63",
+    "sp_atk": "80",
+    "sp_def": "80",
+    "speed": "60",
+    "detail_path": "https://pokemondb.net/pokedex/ivysaur",
+    "base_exp": "142"
+  },
+  {
+    "full_name": "Venusaur",
+    "name": "Venusaur",
+    "number": "0003",
+    "type": "Grass Poison",
+    "total": "525",
+    "hp": "80",
+    "attack": "82",
+    "defense": "83",
+    "sp_atk": "100",
+    "sp_def": "100",
+    "speed": "80",
+    "detail_path": "https://pokemondb.net/pokedex/venusaur",
+    "base_exp": "281"
+  },
+  {
+    "full_name": "Mega Venusaur",
+    "name": "Venusaur",
+    "number": "0003",
+    "type": "Grass Poison",
+    "total": "625",
+    "hp": "80",
+    "attack": "100",
+    "defense": "123",
+    "sp_atk": "122",
+    "sp_def": "120",
+    "speed": "80",
+    "detail_path": "https://pokemondb.net/pokedex/venusaur",
+    "base_exp": ""
+  }
+]
