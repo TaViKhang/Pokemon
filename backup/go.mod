@@ -1,4 +1,4 @@
-module github.com/TaViKhang/pokecat-n-pokebat
+module github.com/nth-Higooo/poke-game
 
 go 1.23.1
 

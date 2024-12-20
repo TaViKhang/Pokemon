@@ -1,0 +1,84 @@
+NetProg – Le Thanh Son
+Network Programming (Net Centric Programming) – IT096IU
+Term Project Description
+Objectives:
+To allow students to gain practical experience of the design, prototyping, testing, and evaluation stages of network
+application development.
+To allow students to gain practical experience of using the TCP and UDP communications protocols at the programming
+level.
+To strengthen the student’s understanding of networking and communication issues by relating theory and practice.
+Project Deliverables:
+Source code and documentation must be submitted on blackboard before due. Zip all your file and name it
+Groupnumber_project.zip (ex: Group01_project.zip)
+A demonstration session will be held at the end of the course. You will be asked to run through your program. Questions
+will be asked to verify your project source code
+Fail to show up during the demonstration session or no demonstration at all will result in ZERO grading for project
+Due date:
+8:00 on demo day
+Demo: starting 8:00 last lecture
+Project Task: PokeCat n PokeBat
+(wiki) Pokémon is a series of video games developed by Game Freak and Creatures Inc. and published by Nintendo as
+part of the Pokémon media franchise. First released in 1996 in Japan for the Game Boy, the main series of role-playing
+video games (RPGs) has continued on each generation of Nintendo's handhelds. Games are commonly released in
+pairs—each with slight variations—and then an enhanced remake of the games is released a few years after the original
+releases. While the main series consists of role-playing games, spinoffs encompass other genres, such as action role-
+playing, puzzle, and digital pet games. As of February 2016, more than 279 million units have been sold worldwide, more
+than 200 millions of which from the main series, making it the second best-selling video game franchise, behind only
+Nintendo's own Mario franchise. The franchise's mascot is Pikachu.
+In this project, we will build a simple, text-based version of Pokemon game: PokeCat and PokeBat. There are two
+modules of the game Cat à Catching and Bat à Battling
+Programming languages requirements: Golang. You can use TCP, UDP for communication
+Pokedex
+Refer to the pokemon database website: www.pokedex.org to build up the pokemon database for our games (get base
+exp from http://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_effort_value_yield)
+Pokemon database can be built using a web crawler. The pokemon database must be store in JSON file pokedex.json
+At least 2 pokemons for each type
+Players store their captured pokemons in a pokemon list file, json format. This file contain information about the pokemon
+from pokedex.json as well as other info such as level, accumulated experience.
+Leveling a pokemon:
+- Pokemon earns exp points via pokebat (refer below)
+- Pokemon need to double the accumulated exp at each level to gain next level
+- All attributes, except speed and dmg_when_atked, will be re-calculated: old * (1 + EV). EV by default is 0.5.
+Bonus: EV can be randomized from 0.5 – 1 when server spawn pokemons (refer to PokeCat)
+- A pokemon can be destroyed to give all its accumulated exp to a same type pokemon
+PokeBat
+The pokemon battle allows two persons to attend via network. Each player will pick 3 pokemons from their pokemon list to
+join a battle
+Turn based battle
+1st pokemon of 2 players who has higher speed will take 1st move
+NetProg – Le Thanh Son
+Player can switch pokemon during battle, turn will end after switching
+Play must switch pokemon if the active pokemon got killed in battle
+A pokemon attack will be randomly choose between normal attack and special attack
+A special attack will have all elemental effects of a pokemon. Highest elemental damage will be applied to target pokemon
+Normal attack: DMGA = ATKA – DEFB
+Special attack: DMGA = SP.ATKA * ELEMENTAL_MULTIPLYB – SP.DEFB
+HPB = HPB – DMGA
+One player can surrender a battle à other player will win automatically
+Each pokemon of winning player will get 1/3 total of accumulated exp of all pokemons on the losing team
+PokeCat
+Pokeworld is a 1000x1000 (configurable) cells
+Support multiple players on pokeworld. Player can join anytime
+Player starts at a random coordinate. Player can move up/down, left/right one cell every second. Auto mode: set duration
+to run (i.e. 120 sec)
+Server spawns pokemon every minute using pokedex, 50 (configurable) pokemons each wave, spawned pokemons have
+random level and random EV point (0.5-1). Pokemon will be despawned after 5 mins w/o being captured
+When player in a cell that contains a pokemon à pokemon will be automatically captured
+Player can have maximum 200 pokemons
+Documentation:
+- Architecture
+- Format for player json data file
+- Sequence diagram for main functions
+- Instruction how to deploy and run your project
+Grading:
+- 20% of course grade
+- Pokedex: 20 pts
+- PokeBat: 40 pts
+- PokeCat: 30 pts
+- Document: 10 pts
+- Bonuses: (additional info may be added to pokedex json format if needed)
+- Pokemon Evolve (5pts): refer to pokedex.org and go to pokemon individual page to see details. Example:
+Bulbasaur evolves into Ivysaur at level 16.
+- Other (10pts): introduce pokestops on pokeworld, pokestops contains pokeballs and berries. Pokeballs are used
+to catch pokemon, berries are used to revive death pokemons after battle. Particular game mechanics should be
+changed to adapt if applicable
