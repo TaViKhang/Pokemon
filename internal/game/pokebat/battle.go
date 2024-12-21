@@ -38,7 +38,7 @@ type Battle struct {
 	mu           sync.RWMutex
 }
 
-func NewBattle(id string, p1 *models.Player, p2 *models.Player) (*Battle, error) {
+func NewBattle(id string, p1, p2 *models.Player) (*Battle, error) {
 	// Validate players
 	if p1.IsInBattle() || p2.IsInBattle() {
 		return nil, fmt.Errorf("player already in battle")
@@ -128,7 +128,7 @@ func (b *Battle) ExecuteMove(playerID string, moveType string) error {
 
 	// Check if defender fainted
 	if !defender.IsAlive() {
-		if err := b.handleFaintedPokemon(playerID); err != nil {
+		if err := b.HandleFaintedPokemon(playerID); err != nil {
 			return err
 		}
 	}
@@ -222,7 +222,7 @@ func (b *Battle) calculateDamage(attacker, defender *models.Pokemon, moveType st
 	return int(float64(baseDamage)*maxMultiplier) - defender.CurrentStats.SpecialDef
 }
 
-func (b *Battle) handleFaintedPokemon(playerID string) error {
+func (b *Battle) HandleFaintedPokemon(playerID string) error {
 	defender := b.getDefendingPlayer(playerID)
 
 	// Find next available Pokemon
@@ -285,3 +285,23 @@ func (b *Battle) endBattle(winnerID string) error {
 }
 
 // Helper methods...
+
+func (b *Battle) AddLog(message string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.Logs = append(b.Logs, message)
+}
+
+func (b *Battle) getOpponentID(playerID string) string {
+	if playerID == b.Player1.ID {
+		return b.Player2.ID
+	}
+	return b.Player1.ID
+}
+
+func (b *Battle) getPlayer(playerID string) *BattlePlayer {
+	if playerID == b.Player1.ID {
+		return b.Player1
+	}
+	return b.Player2
+}

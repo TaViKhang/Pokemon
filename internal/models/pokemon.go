@@ -22,19 +22,26 @@ type Stats struct {
 	Total      int `json:"total"`
 }
 
+// PokemonPosition - Vị trí của Pokemon trên bản đồ
+type PokemonPosition struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
 // Pokemon - Core model cho mỗi Pokemon
 type Pokemon struct {
-	FullName       string   `json:"full_name"`
-	Name           string   `json:"name"`
-	Number         string   `json:"number"`
-	Types          []string `json:"type"`
-	BaseStats      Stats    `json:"base_stats"`
-	CurrentStats   Stats    `json:"current_stats"`
-	Level          int      `json:"level"`
-	AccumulatedExp int      `json:"accumulated_exp"`
-	BaseExp        int      `json:"base_exp"`
-	EV             float64  `json:"ev"`
-	IsDestroyed    bool     `json:"is_destroyed"`
+	FullName       string          `json:"full_name"`
+	Name           string          `json:"name"`
+	Number         string          `json:"number"`
+	Position       PokemonPosition `json:"position"`
+	Types          []string        `json:"type"`
+	BaseStats      Stats           `json:"base_stats"`
+	CurrentStats   Stats           `json:"current_stats"`
+	Level          int             `json:"level"`
+	AccumulatedExp int             `json:"accumulated_exp"`
+	BaseExp        int             `json:"base_exp"`
+	EV             float64         `json:"ev"`
+	IsDestroyed    bool            `json:"is_destroyed"`
 }
 
 // NewPokemon - Tạo Pokemon mới từ dữ liệu Pokedex
