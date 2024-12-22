@@ -11,7 +11,7 @@ import (
 	"github.com/TaViKhang/pokecat-n-pokebat/internal/constants"
 )
 
-// Stats - Thông số cơ bản của Pokemon
+// Stats - Basic stats for a Pokemon
 type Stats struct {
 	HP         int `json:"hp"`
 	Attack     int `json:"attack"`
@@ -22,13 +22,13 @@ type Stats struct {
 	Total      int `json:"total"`
 }
 
-// PokemonPosition - Vị trí của Pokemon trên bản đồ
+// PokemonPosition - Position of the Pokemon on the map
 type PokemonPosition struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
 
-// Pokemon - Core model cho mỗi Pokemon
+// Pokemon - Core model for each Pokemon
 type Pokemon struct {
 	FullName       string          `json:"full_name"`
 	Name           string          `json:"name"`
@@ -44,7 +44,7 @@ type Pokemon struct {
 	IsDestroyed    bool            `json:"is_destroyed"`
 }
 
-// NewPokemon - Tạo Pokemon mới từ dữ liệu Pokedex
+// NewPokemon - Create a new Pokemon from Pokedex data
 func NewPokemon(pokedexData map[string]interface{}, level int, ev float64) (*Pokemon, error) {
 	// Validate input
 	if level < 1 || level > constants.MaxLevel {
@@ -69,6 +69,7 @@ func NewPokemon(pokedexData map[string]interface{}, level int, ev float64) (*Pok
 		Total:      int(pokedexData["total"].(float64)),
 	}
 
+	// Generate Pokemon object
 	pokemon := &Pokemon{
 		FullName:       pokedexData["full_name"].(string),
 		Name:           pokedexData["name"].(string),
@@ -82,12 +83,12 @@ func NewPokemon(pokedexData map[string]interface{}, level int, ev float64) (*Pok
 		IsDestroyed:    false,
 	}
 
-	// Calculate initial stats
+	// Recalculate stats based on level and EV
 	pokemon.recalculateStats()
 	return pokemon, nil
 }
 
-// NewRandomPokemon - Tạo Pokemon ngẫu nhiên với level và EV cho trước
+// NewRandomPokemon - Create a random Pokemon with the given level and EV
 func NewRandomPokemon(level int, ev float64) (*Pokemon, error) {
 	// Validate input
 	if level < 1 || level > constants.MaxLevel {
@@ -97,13 +98,13 @@ func NewRandomPokemon(level int, ev float64) (*Pokemon, error) {
 		return nil, fmt.Errorf("invalid EV: %f", ev)
 	}
 
-	// Load pokedex data
+	// Load Pokedex data
 	pokedexData, err := loadPokedexData()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load pokedex: %v", err)
 	}
 
-	// Random select một Pokemon từ Pokedex
+	// Randomly select a Pokemon from Pokedex
 	pokemons := make([]map[string]interface{}, 0)
 	for _, data := range pokedexData {
 		if pokemon, ok := data.(map[string]interface{}); ok {
@@ -119,7 +120,7 @@ func NewRandomPokemon(level int, ev float64) (*Pokemon, error) {
 	return NewPokemon(randomPokemon, level, ev)
 }
 
-// loadPokedexData - Load dữ liệu từ pokedex.json
+// loadPokedexData - Load data from pokedex.json
 func loadPokedexData() (map[string]interface{}, error) {
 	data, err := os.ReadFile("data/pokedex.json")
 	if err != nil {
@@ -134,7 +135,7 @@ func loadPokedexData() (map[string]interface{}, error) {
 	return pokedex, nil
 }
 
-// AddExperience - Thêm exp và level up nếu đủ điều kiện
+// AddExperience - Add experience and level up if needed
 func (p *Pokemon) AddExperience(exp int) (bool, error) {
 	if p.IsDestroyed {
 		return false, fmt.Errorf(constants.ErrPokemonDestroyed)
@@ -157,12 +158,12 @@ func (p *Pokemon) AddExperience(exp int) (bool, error) {
 	return false, nil
 }
 
-// calculateRequiredExp - Tính exp cần thiết cho level tiếp theo
+// calculateRequiredExp - Calculate the required exp for the next level
 func (p *Pokemon) calculateRequiredExp() int {
 	return p.BaseExp * int(math.Pow(constants.ExpMultiplierPerLevel, float64(p.Level-1)))
 }
 
-// recalculateStats - Tính lại stats dựa trên level và EV
+// recalculateStats - Recalculate stats based on level and EV
 func (p *Pokemon) recalculateStats() {
 	multiplier := 1.0 + p.EV
 	p.CurrentStats = Stats{
@@ -171,17 +172,17 @@ func (p *Pokemon) recalculateStats() {
 		Defense:    int(float64(p.BaseStats.Defense) * multiplier),
 		SpecialAtk: int(float64(p.BaseStats.SpecialAtk) * multiplier),
 		SpecialDef: int(float64(p.BaseStats.SpecialDef) * multiplier),
-		Speed:      p.BaseStats.Speed, // Speed không thay đổi theo EV
-		Total:      0,                 // Total sẽ được tính lại
+		Speed:      p.BaseStats.Speed, // Speed does not change with EV
+		Total:      0,                 // Total will be recalculated
 	}
 
-	// Tính lại Total
+	// Recalculate Total
 	p.CurrentStats.Total = p.CurrentStats.HP + p.CurrentStats.Attack +
 		p.CurrentStats.Defense + p.CurrentStats.SpecialAtk +
 		p.CurrentStats.SpecialDef + p.CurrentStats.Speed
 }
 
-// TransferExpToSameType - Chuyển exp cho Pokemon cùng type
+// TransferExpToSameType - Transfer experience to a Pokemon of the same type
 func (p *Pokemon) TransferExpToSameType(target *Pokemon) error {
 	if p.IsDestroyed {
 		return fmt.Errorf(constants.ErrPokemonDestroyed)
@@ -204,7 +205,7 @@ func (p *Pokemon) TransferExpToSameType(target *Pokemon) error {
 	return nil
 }
 
-// DestroyPokemon - Xóa Pokemon sau khi transfer exp
+// DestroyPokemon - Destroy the Pokemon after transferring exp
 func (p *Pokemon) DestroyPokemon() error {
 	if p.AccumulatedExp > 0 {
 		return fmt.Errorf("cannot destroy pokemon with remaining exp")
@@ -213,7 +214,7 @@ func (p *Pokemon) DestroyPokemon() error {
 	return nil
 }
 
-// hasSameType - Kiểm tra có cùng type không
+// hasSameType - Check if the Pokemon has the same type as another
 func (p *Pokemon) hasSameType(other *Pokemon) bool {
 	if len(p.Types) != len(other.Types) {
 		return false
@@ -234,32 +235,42 @@ func (p *Pokemon) hasSameType(other *Pokemon) bool {
 	return true
 }
 
-// GetBattleStats - Lấy stats hiện tại cho battle system
+// GetBattleStats - Get stats for battle system
 func (p *Pokemon) GetBattleStats() Stats {
 	return p.CurrentStats
 }
 
-// GetTypes - Lấy danh sách types cho battle system
+// GetTypes - Get types for battle system
 func (p *Pokemon) GetTypes() []string {
 	return p.Types
 }
 
-// IsAlive - Kiểm tra Pokemon còn sống không
+// IsAlive - Check if the Pokemon is alive
 func (p *Pokemon) IsAlive() bool {
 	return !p.IsDestroyed && p.CurrentStats.HP > 0
 }
 
-// GetLevel - Lấy level hiện tại
+// GetLevel - Get current level
 func (p *Pokemon) GetLevel() int {
 	return p.Level
 }
 
-// GetExp - Lấy exp hiện tại
+// GetExp - Get current experience
 func (p *Pokemon) GetExp() int {
 	return p.AccumulatedExp
 }
 
-// GetRequiredExp - Lấy exp cần thiết cho level tiếp theo
+// GetRequiredExp - Get required experience for next level
 func (p *Pokemon) GetRequiredExp() int {
 	return p.calculateRequiredExp()
+}
+
+// GetPosition - Get the current position of the Pokemon
+func (p *Pokemon) GetPosition() PokemonPosition {
+	return p.Position
+}
+
+// GetName - Get the name of the Pokemon
+func (p *Pokemon) GetName() string {
+	return p.Name
 }

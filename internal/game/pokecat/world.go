@@ -7,21 +7,22 @@ import (
 
 	"github.com/TaViKhang/pokecat-n-pokebat/internal/constants"
 	"github.com/TaViKhang/pokecat-n-pokebat/internal/models"
+	"github.com/TaViKhang/pokecat-n-pokebat/internal/network/protocol"
 )
 
-// Cell - Đại diện cho một ô trong world grid
+// Cell - Represents a cell in the world grid
 type Cell struct {
 	Players map[string]*models.Player
 	Pokemon map[string]*models.Pokemon
 	mu      sync.RWMutex
 }
 
-// Grid - Core model cho world grid system
+// Grid - Core model for world grid system
 type Grid struct {
 	width     int
 	height    int
 	cells     [][]*Cell
-	mu        sync.RWMutex
+	// mu        sync.RWMutex
 	spawnTick *time.Ticker
 	done      chan struct{}
 }
@@ -34,7 +35,7 @@ func NewGrid() *Grid {
 		done:   make(chan struct{}),
 	}
 
-	// Khởi tạo cells
+	// Initialize cells
 	for i := range grid.cells {
 		grid.cells[i] = make([]*Cell, constants.WorldWidth)
 		for j := range grid.cells[i] {
@@ -45,7 +46,7 @@ func NewGrid() *Grid {
 		}
 	}
 
-	// Bắt đầu spawn routine
+	// Start spawn routine (if needed)
 	grid.startSpawnRoutine()
 	return grid
 }
@@ -57,7 +58,7 @@ func (g *Grid) GetCell(x, y int) (*Cell, error) {
 	return g.cells[y][x], nil
 }
 
-// AddPlayer - Thêm player vào world
+// AddPlayer - Add a player to the world
 func (g *Grid) AddPlayer(player *models.Player) error {
 	pos := player.GetPosition()
 	cell, err := g.GetCell(pos.X, pos.Y)
@@ -71,7 +72,7 @@ func (g *Grid) AddPlayer(player *models.Player) error {
 	return nil
 }
 
-// RemovePlayer - Xóa player khỏi world
+// RemovePlayer - Remove a player from the world
 func (g *Grid) RemovePlayer(player *models.Player) error {
 	pos := player.GetPosition()
 	cell, err := g.GetCell(pos.X, pos.Y)
@@ -85,7 +86,7 @@ func (g *Grid) RemovePlayer(player *models.Player) error {
 	return nil
 }
 
-// GetNearbyPokemons - Lấy danh sách Pokemon trong phạm vi có thể bắt
+// GetNearbyPokemons - Get the list of Pokemons in the catchable range
 func (g *Grid) GetNearbyPokemons(x, y int) map[string]*models.Pokemon {
 	result := make(map[string]*models.Pokemon)
 	cell, err := g.GetCell(x, y)
@@ -101,7 +102,7 @@ func (g *Grid) GetNearbyPokemons(x, y int) map[string]*models.Pokemon {
 	return result
 }
 
-// CatchPokemon - Bắt Pokemon tại vị trí chỉ định
+// CatchPokemon - Catch a Pokemon at the specified position
 func (g *Grid) CatchPokemon(x, y int, pokemonNumber string) (*models.Pokemon, error) {
 	cell, err := g.GetCell(x, y)
 	if err != nil {
@@ -116,11 +117,12 @@ func (g *Grid) CatchPokemon(x, y int, pokemonNumber string) (*models.Pokemon, er
 		return nil, fmt.Errorf("pokemon not found at position (%d,%d)", x, y)
 	}
 
-	// Xóa Pokemon khỏi world sau khi bắt
+	// Remove Pokemon from the world after catching
 	delete(cell.Pokemon, pokemonNumber)
 	return pokemon, nil
 }
 
+// MovePlayer - Move a player to a new position
 func (g *Grid) MovePlayer(player *models.Player, newX, newY int) error {
 	if !g.isValidPosition(newX, newY) {
 		return fmt.Errorf("invalid position: (%d,%d)", newX, newY)
@@ -130,7 +132,7 @@ func (g *Grid) MovePlayer(player *models.Player, newX, newY int) error {
 	oldCell, _ := g.GetCell(oldPos.X, oldPos.Y)
 	newCell, _ := g.GetCell(newX, newY)
 
-	// Lock cells theo thứ tự để tránh deadlock
+	// Lock cells in order to avoid deadlock
 	if oldPos.Y < newY || (oldPos.Y == newY && oldPos.X < newX) {
 		oldCell.mu.Lock()
 		newCell.mu.Lock()
@@ -146,4 +148,50 @@ func (g *Grid) MovePlayer(player *models.Player, newX, newY int) error {
 	newCell.Players[player.GetID()] = player
 
 	return nil
+}
+
+// GetState - Get the world state, including all players and pokemons
+func (g *Grid) GetState() protocol.WorldStatePayload {
+	// Create a map for player positions
+	playerPositions := make(map[string]protocol.Position)
+	for _, cellRow := range g.cells {
+		for _, cell := range cellRow {
+			cell.mu.RLock()
+			for _, player := range cell.Players {
+				pos := player.GetPosition()
+				playerPositions[player.GetID()] = protocol.Position{
+					X: pos.X,
+					Y: pos.Y,
+				}
+			}
+			cell.mu.RUnlock()
+		}
+	}
+
+	// Create a list for pokemon positions
+	var pokemonPositions = make(map[string]models.Pokemon)  // Initialize map properly
+
+	for _, cellRow := range g.cells {
+		for _, cell := range cellRow {
+			cell.mu.RLock()
+			for _, pokemon := range cell.Pokemon {
+				// Get the position of the Pokémon
+				pos := pokemon.GetPosition()
+	
+				// Add the Pokémon to the map with its ID (e.g., using pokemon.Name or pokemon.Number as the key)
+				pokemonPositions[pokemon.Name] = models.Pokemon{
+					// You can include other fields from the Pokemon struct if needed
+					Position: pos,
+				}
+			}
+			cell.mu.RUnlock()
+		}
+	}
+
+	// Assume "player_1" as the current player ID for now
+	return protocol.WorldStatePayload{
+		Players:        playerPositions,
+		Pokemons:       pokemonPositions,
+		CurrentPlayerID: "player_1", // This should be dynamic if needed
+	}
 }

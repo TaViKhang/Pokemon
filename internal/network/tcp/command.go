@@ -17,7 +17,7 @@ const (
 	CmdHeartbeat CommandType = "heartbeat"
 )
 
-type Command struct {
+ type Command struct {
 	Type    CommandType     `json:"type"`
 	Payload json.RawMessage `json:"payload"`
 }

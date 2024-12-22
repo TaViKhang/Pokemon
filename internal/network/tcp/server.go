@@ -11,6 +11,7 @@ import (
 	"github.com/TaViKhang/pokecat-n-pokebat/internal/game/pokebat"
 	"github.com/TaViKhang/pokecat-n-pokebat/internal/game/pokecat"
 	"github.com/TaViKhang/pokecat-n-pokebat/internal/models"
+	"github.com/TaViKhang/pokecat-n-pokebat/internal/network/protocol"
 )
 
 type GameServer struct {
@@ -85,25 +86,36 @@ func (s *GameServer) handleNewConnection(conn net.Conn) {
 }
 
 func (s *GameServer) handleClientRead(client *Client) {
-	defer func() {
-		s.removeClient(client)
-		client.Conn.Close()
-	}()
+    defer func() {
+        s.removeClient(client)
+        client.Conn.Close()
+    }()
 
-	for {
-		buf := make([]byte, 4096)
-		n, err := client.Conn.Read(buf)
-		if err != nil {
-			return
-		}
+    // Send initial world state to the client
+    worldState := s.world.GetState() // Assuming there's a method to get the world state
+    err := protocol.SendCommand(client.Conn, protocol.CmdWorldState, worldState)
+    if err != nil {
+        log.Printf("Error sending world state: %v", err)
+        return
+    }
 
-		if err := s.handleCommand(client, buf[:n]); err != nil {
-			// Broadcast error về cho client
-			s.broadcast(client.Player.GetID(), "error", err.Error())
-			log.Printf("Error handling command: %v", err)
-		}
-	}
+    // Handle incoming commands (game actions) from the client
+    for {
+        buf := make([]byte, 4096)
+        n, err := client.Conn.Read(buf)
+        if err != nil {
+            return
+        }
+
+        if err := s.handleCommand(client, buf[:n]); err != nil {
+            // Broadcast error to client
+            s.broadcast(client.Player.GetID(), "error", err.Error())
+            log.Printf("Error handling command: %v", err)
+        }
+    }
 }
+
+
 
 func (s *GameServer) handleClientWrite(client *Client) {
 	for msg := range client.SendChan {
